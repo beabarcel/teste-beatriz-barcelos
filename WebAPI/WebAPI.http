@@ -1,0 +1,6 @@
+﻿@WebAPI_HostAddress = https://localhost:7162
+
+
+GET {{WebAPI_HostAddress}}/invoice/{customer}
+
+###
