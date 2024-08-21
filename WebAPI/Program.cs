@@ -11,6 +11,7 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IPerformanceService, PerformanceService>();
 builder.Services.AddScoped<IPlayService, PlayService>();
+builder.Services.AddScoped<IExtractProcessingService, ExtractProcessingService>();
 builder.Services.AddDbContext<TheatricalContext>(opt => opt.UseInMemoryDatabase("TheatricalDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -192,5 +193,12 @@ app.MapDelete("/plays/{id}", async (int id, IPlayService playService) =>
         return Results.NotFound();
     }
 });
+
+app.MapPost("/process-extracts", async (IExtractProcessingService extractProcessingService) =>
+{
+    await extractProcessingService.ProcessExtractsAsync();
+    return Results.Ok("Extracts processing started.");
+});
+
 
 app.Run();
