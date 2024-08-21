@@ -6,6 +6,7 @@ namespace Domain.Models
     public class Item
     {
         [Key]
+        [XmlIgnore]
         public int Id { get; set; }
 
         [XmlIgnore]

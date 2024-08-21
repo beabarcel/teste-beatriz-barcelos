@@ -25,7 +25,7 @@ public class StatementCalculator
             var lines = play.Lines;
             int itemCredits = 0;
             lines = SetTotalLines(lines);
-            //A especificação ou o teste possui um erro onde indica dividir por 10 e não multiplicar por 10
+            //A especificação possui um erro onde indica dividir por 10 e não multiplicar por 10
             decimal thisAmount = SetAmountCalculation(lines);
 
             switch (play.Type)

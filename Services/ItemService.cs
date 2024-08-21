@@ -7,22 +7,22 @@ namespace Services
 {
     public class ItemService : IItemService
     {
+        private readonly TheatricalContext _db;
+        public ItemService(TheatricalContext db)
+        {
+            _db = db;
+        }
 
         public async Task<Item> GetItemById(int id)
         {
             return await _db.Items.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task<List<Item>> GetItem()
+        public async Task<List<Item>> GetItems()
         {
             return await _db.Items.ToListAsync();
         }
 
-        private readonly TheatricalContext _db;
-        public ItemService(TheatricalContext db)
-        {
-            _db = db;
-        }
         public async Task<Item> CreateItem(Item item)
         {
             _db.Items.Add(item);
@@ -56,9 +56,5 @@ namespace Services
             return false;
         }
 
-        public Task<List<Item>> GetItems()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

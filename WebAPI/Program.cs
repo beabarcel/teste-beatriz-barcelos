@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IPerformanceService, PerformanceService>();
+builder.Services.AddScoped<IPlayService, PlayService>();
 builder.Services.AddDbContext<TheatricalContext>(opt => opt.UseInMemoryDatabase("TheatricalDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -95,79 +97,86 @@ app.MapDelete("/items/{id}", async (int id, IItemService itemService) =>
     }
 });
 
-app.MapGet("/performances", async (TheatricalContext db) =>
-    await db.Performances.ToListAsync());
-
-app.MapPost("/performances", async (TheatricalContext db, Performance performance) =>
+app.MapGet("/performances", async (IPerformanceService performanceService) =>
 {
-    db.Performances.Add(performance);
-    await db.SaveChangesAsync();
-    return Results.Created($"/performances/{performance.Id}", performance);
+    return await performanceService.GetPerformances();
 });
 
-app.MapPut("/performances/{id}", async (int id, TheatricalContext db, Performance updatedPerformance) =>
+
+app.MapGet("/performances/{id}", async (int id, IPerformanceService performanceService) =>
 {
-    var existingPerformance = await db.Performances.FindAsync(id);
-    if (existingPerformance == null)
-    {
-        return Results.NotFound();
-    }
+    var getPerformanceById = await performanceService
+    .GetPerformanceById(id);
+    return Results.Ok(getPerformanceById);
+});
+app.MapPost("/performances", async (IPerformanceService performanceService, Performance performance) =>
+{
+    var newPerformance = await performanceService
+    .CreatePerformance(performance);
+    return Results.Created($"/performances/{newPerformance.Id}", newPerformance);
+});
 
-    existingPerformance.PlayId = updatedPerformance.PlayId;
-    existingPerformance.Audience = updatedPerformance.Audience;
-
-    await db.SaveChangesAsync();
+app.MapPut("/performances", async (Performance updatedPerformance, IPerformanceService performanceService) =>
+{
+    var existingPerformance = await performanceService
+    .PutPerformance(updatedPerformance);
     return Results.Ok(existingPerformance);
 });
 
-app.MapDelete("/performances/{id}", async (int id, TheatricalContext db) =>
+app.MapDelete("/performances/{id}", async (int id, IPerformanceService performanceService) =>
 {
-    if (await db.Performances.FindAsync(id) is Performance performance)
+    var deletePerformance = await performanceService
+    .DeletePerformance(id);
+
+    if (deletePerformance)
     {
-        db.Performances.Remove(performance);
-        await db.SaveChangesAsync();
-        return Results.NoContent();
+        return Results.Ok();
     }
-
-    return Results.NotFound();
-});
-
-app.MapGet("/plays", async (TheatricalContext db) =>
-    await db.Plays.ToListAsync());
-
-app.MapPost("/plays", async (TheatricalContext db, Play play) =>
-{
-    db.Plays.Add(play);
-    await db.SaveChangesAsync();
-    return Results.Created($"/plays/{play.Id}", play);
-});
-
-app.MapPut("/plays/{id}", async (int id, TheatricalContext db, Play updatedPlay) =>
-{
-    var existingPlay = await db.Plays.FindAsync(id);
-    if (existingPlay == null)
+    else
     {
         return Results.NotFound();
     }
+});
 
-    existingPlay.Name = updatedPlay.Name;
-    existingPlay.Lines = updatedPlay.Lines;
-    existingPlay.Type = updatedPlay.Type;
+app.MapGet("/plays", async (IPlayService playService) =>
+{
+    return await playService.GetPlays();
+});
 
-    await db.SaveChangesAsync();
+
+app.MapGet("/plays/{id}", async (int id, IPlayService playService) =>
+{
+    var getPlayById = await playService
+    .GetPlayById(id);
+    return Results.Ok(getPlayById);
+});
+app.MapPost("/plays", async (IPlayService playService, Play play) =>
+{
+    var newPlay = await playService
+    .CreatePlay(play);
+    return Results.Created($"/plays/{newPlay.Id}", newPlay);
+});
+
+app.MapPut("/plays", async (Play updatedPlay, IPlayService playService) =>
+{
+    var existingPlay = await playService
+    .PutPlay(updatedPlay);
     return Results.Ok(existingPlay);
 });
 
-app.MapDelete("/plays/{id}", async (int id, TheatricalContext db) =>
+app.MapDelete("/plays/{id}", async (int id, IPlayService playService) =>
 {
-    if (await db.Plays.FindAsync(id) is Play play)
-    {
-        db.Plays.Remove(play);
-        await db.SaveChangesAsync();
-        return Results.NoContent();
-    }
+    var deletePlay = await playService
+    .DeletePlay(id);
 
-    return Results.NotFound();
+    if (deletePlay)
+    {
+        return Results.Ok();
+    }
+    else
+    {
+        return Results.NotFound();
+    }
 });
 
 app.Run();
