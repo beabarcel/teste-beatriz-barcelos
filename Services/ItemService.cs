@@ -1,6 +1,7 @@
 ﻿using Data.Theatrical;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Services.Common;
 using Services.Interfaces;
 
 namespace Services
@@ -13,48 +14,69 @@ namespace Services
             _db = db;
         }
 
-        public async Task<Item> GetItemById(int id)
+        public async Task<ServiceResponse<Item>> GetItemById(int id)
         {
-            return await _db.Items.FirstOrDefaultAsync(i => i.Id == id);
-        }
-
-        public async Task<List<Item>> GetItems()
-        {
-            return await _db.Items.ToListAsync();
-        }
-
-        public async Task<Item> CreateItem(Item item)
-        {
-            _db.Items.Add(item);
-            await _db.SaveChangesAsync();
-            return item;
-        }
-
-        public async Task<Item> PutItem(Item item)
-        {
+            var item = await _db.Items
+                .FirstOrDefaultAsync(i => i.Id == id);
+            
             if (item == null)
             {
-                return null;
+                return new ServiceResponse<Item>("Item not found");
+            }
+        
+            return new ServiceResponse<Item>(item);
+        }
+
+        public async Task<ServiceResponse<List<Item>>> GetItems()
+        {
+            var items = await _db
+                .Items.ToListAsync();
+            
+            return new ServiceResponse<List<Item>>(items);
+        }
+
+        public async Task<ServiceResponse<Item>> CreateItem(Item item)
+        {
+            var existingItem = await _db.Items
+                .FirstOrDefaultAsync(i => i.Id == item.Id);
+
+            if (existingItem != null)
+            {
+                return new ServiceResponse<Item>("Item already exists");
             }
 
-            _db.Items.Update(item);
+            _db.Items.Add(item);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Item>(item);
+        }
+
+        public async Task<ServiceResponse<Item>> PutItem(Item item)
+        {
+            var existingItem = await _db.Items.FindAsync(item.Id);
+
+            if (existingItem == null)
+            {
+                return new ServiceResponse<Item>("Item not found");
+            }
+            _db.Entry(existingItem).CurrentValues.SetValues(item);
 
             await _db.SaveChangesAsync();
 
-            return item;
+            return new ServiceResponse<Item>(existingItem);
         }
-        public async Task<bool> DeleteItem(int id)
-        {
-            var deleteItem = await _db.Items.FirstOrDefaultAsync(i => i.Id == id);
-            if (deleteItem != null)
-            {
-                _db.Items.Remove(deleteItem);
-                await _db.SaveChangesAsync();
-                return true;
-            }
 
-            return false;
+        public async Task<ServiceResponse<bool>> DeleteItem(int id)
+        {
+        var deleteItem = await _db.Items.FirstOrDefaultAsync(i => i.Id == id);
+        if (deleteItem != null)
+        {
+            _db.Items.Remove(deleteItem);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<bool>(true);
         }
+
+        return new ServiceResponse<bool>("Item not found");
+    }
 
     }
 }

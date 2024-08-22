@@ -1,13 +1,14 @@
 ﻿using Domain.Models;
+using Services.Common;
 
 namespace Services.Interfaces
 {
     public interface IPlayService
     {
-        Task<List<Play>> GetPlays();
-        Task<Play> GetPlayById(int id);
-        Task<Play> CreatePlay(Play play);
-        Task<Play> PutPlay(Play play);
-        Task<bool> DeletePlay(int id);
+        Task<ServiceResponse<List<Play>>> GetPlays();
+        Task<ServiceResponse<Play>> GetPlayById(int id);
+        Task<ServiceResponse<Play>> CreatePlay(Play play);
+        Task<ServiceResponse<Play>> PutPlay(Play play);
+        Task<ServiceResponse<bool>> DeletePlay(int id);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Data.Theatrical;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Services.Common;
 using Services.Interfaces;
 
 namespace Services
@@ -13,48 +14,69 @@ namespace Services
         {
             _db = db;
         }
-        public async Task<Performance> GetPerformanceById(int id)
+        public async Task<ServiceResponse<Performance>> GetPerformanceById(int id)
         {
-            return await _db.Performances.FirstOrDefaultAsync(i => i.Id == id);
-        }
+            var performance = await _db.Performances
+                .FirstOrDefaultAsync(i => i.Id == id);
 
-        public async Task<List<Performance>> GetPerformances()
-        {
-            return await _db.Performances.ToListAsync();
-        }
-
-        public async Task<Performance> CreatePerformance(Performance performance)
-        {
-            _db.Performances.Add(performance);
-            await _db.SaveChangesAsync();
-            return performance;
-        }
-
-        public async Task<Performance> PutPerformance(Performance performance)
-        {
             if (performance == null)
             {
-                return null;
+                return new ServiceResponse<Performance>("Performance not found");
             }
 
-            _db.Performances.Update(performance);
+            return new ServiceResponse<Performance>(performance);
+        }
+
+        public async Task<ServiceResponse<List<Performance>>> GetPerformances()
+        {
+            var performance = await _db
+                .Performances.ToListAsync();
+
+            return new ServiceResponse<List<Performance>>(performance);
+        }
+
+        public async Task<ServiceResponse<Performance>> CreatePerformance(Performance performance)
+        {
+            var existingPerformance = await _db.Performances
+                .FirstOrDefaultAsync(i => i.Id == performance.Id);
+
+            if (existingPerformance != null)
+            {
+                return new ServiceResponse<Performance>("Performance already exists");
+            }
+
+            _db.Performances.Add(performance);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Performance>(performance);
+        }
+
+        public async Task<ServiceResponse<Performance>> PutPerformance(Performance performance)
+        {
+            var existingPerformance = await _db.Performances.FindAsync(performance.Id);
+
+            if (existingPerformance == null)
+            {
+                return new ServiceResponse<Performance>("Performance not found");
+            }
+            _db.Entry(existingPerformance).CurrentValues.SetValues(performance);
 
             await _db.SaveChangesAsync();
 
-            return performance;
+            return new ServiceResponse<Performance>(existingPerformance);
         }
-        public async Task<bool> DeletePerformance(int id)
+
+
+        public async Task<ServiceResponse<bool>> DeletePerformance(int id)
         {
             var deletePerformance = await _db.Performances.FirstOrDefaultAsync(i => i.Id == id);
             if (deletePerformance != null)
             {
                 _db.Performances.Remove(deletePerformance);
                 await _db.SaveChangesAsync();
-                return true;
+                return new ServiceResponse<bool>(true);
             }
 
-            return false;
+            return new ServiceResponse<bool>("Performance not found");
         }
-
     }
 }

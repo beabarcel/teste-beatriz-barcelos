@@ -1,0 +1,13 @@
+<Invoices>
+  <Invoice>
+    <Id>1</Id>
+    <Customer>Beatriz Barcelos</Customer>
+    <Performances>
+      <Performance>
+        <Id>1</Id>
+        <PlayId>Hamlet</PlayId>
+        <Audience>20</Audience>
+      </Performance>
+    </Performances>
+  </Invoice>
+</Invoices>

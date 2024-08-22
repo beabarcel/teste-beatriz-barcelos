@@ -1,6 +1,7 @@
 ﻿using Data.Theatrical;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Services.Common;
 using Services.Interfaces;
 
 namespace Services
@@ -13,47 +14,68 @@ namespace Services
         {
             _db = db;
         }
-        public async Task<Play> GetPlayById(int id)
+        public async Task<ServiceResponse<Play>> GetPlayById(int id)
         {
-            return await _db.Plays.FirstOrDefaultAsync(i => i.Id == id);
-        }
+            var play = await _db.Plays
+                .FirstOrDefaultAsync(i => i.Id == id);
 
-        public async Task<List<Play>> GetPlays()
-        {
-            return await _db.Plays.ToListAsync();
-        }
-
-        public async Task<Play> CreatePlay(Play play)
-        {
-            _db.Plays.Add(play);
-            await _db.SaveChangesAsync();
-            return play;
-        }
-
-        public async Task<Play> PutPlay(Play play)
-        {
             if (play == null)
             {
-                return null;
+                return new ServiceResponse<Play>("Play not found");
             }
 
-            _db.Plays.Update(play);
+            return new ServiceResponse<Play>(play);
+        }
+
+        public async Task<ServiceResponse<List<Play>>> GetPlays()
+        {
+            var play = await _db
+                .Plays.ToListAsync();
+
+            return new ServiceResponse<List<Play>>(play);
+        }
+
+        public async Task<ServiceResponse<Play>> CreatePlay(Play play)
+        {
+            var existingPlay = await _db.Plays
+                .FirstOrDefaultAsync(i => i.Id == play.Id);
+
+            if (existingPlay != null)
+            {
+                return new ServiceResponse<Play>("Play already exists");
+            }
+
+            _db.Plays.Add(play);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Play>(play);
+        }
+
+        public async Task<ServiceResponse<Play>> PutPlay(Play play)
+        {
+            var existingPlay = await _db.Plays.FindAsync(play.Id);
+
+            if (existingPlay == null)
+            {
+                return new ServiceResponse<Play>("Play not found");
+            }
+            _db.Entry(existingPlay).CurrentValues.SetValues(play);
 
             await _db.SaveChangesAsync();
 
-            return play;
+            return new ServiceResponse<Play>(existingPlay);
         }
-        public async Task<bool> DeletePlay(int id)
+
+        public async Task<ServiceResponse<bool>> DeletePlay(int id)
         {
             var deletePlay = await _db.Plays.FirstOrDefaultAsync(i => i.Id == id);
             if (deletePlay != null)
             {
                 _db.Plays.Remove(deletePlay);
                 await _db.SaveChangesAsync();
-                return true;
+                return new ServiceResponse<bool>(true);
             }
 
-            return false;
+            return new ServiceResponse<bool>("Play not found");
         }
 
     }

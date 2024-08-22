@@ -1,18 +1,14 @@
 ﻿using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Services.Common;
 
 namespace Services.Interfaces
 {
     public interface IPerformanceService
     {
-        Task<List<Performance>> GetPerformances();
-        Task<Performance> GetPerformanceById(int id);
-        Task<Performance> CreatePerformance(Performance performance);
-        Task<Performance> PutPerformance(Performance performance);
-        Task<bool> DeletePerformance(int id);
+        Task<ServiceResponse<List<Performance>>> GetPerformances();
+        Task<ServiceResponse<Performance>> GetPerformanceById(int id);
+        Task<ServiceResponse<Performance>> CreatePerformance(Performance performance);
+        Task<ServiceResponse<Performance>> PutPerformance(Performance performance);
+        Task<ServiceResponse<bool>> DeletePerformance(int id);
     }
 }

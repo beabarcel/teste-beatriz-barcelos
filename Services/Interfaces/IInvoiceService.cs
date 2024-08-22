@@ -1,14 +1,15 @@
 ﻿using Domain.Models;
+using Services.Common;
 
 namespace Services.Interfaces
 {
     public interface IInvoiceService
     {
-        Task<List<Invoice>> GetInvoices();
-        Task<Invoice> GetInvoiceById(int id);
-        Task<Invoice> CreateInvoice(Invoice invoice);
-        Task<Invoice> PutInvoice(Invoice invoice);
-        Task<bool> DeleteInvoice(int id);
+        Task<ServiceResponse<List<Invoice>>> GetInvoices();
+        Task<ServiceResponse<Invoice>> GetInvoiceById(int id);
+        Task<ServiceResponse<Invoice>> CreateInvoice(Invoice invoice);
+        Task<ServiceResponse<Invoice>> PutInvoice(Invoice invoice);
+        Task<ServiceResponse<bool>> DeleteInvoice(int id);
 
     }
 }
